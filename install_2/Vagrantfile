@@ -8,8 +8,8 @@ NUM_WORKER_NODE = 2
 K8S_VERSION = "1.24.0-00"
 
 IP_NW = "192.168.56."
-MASTER_IP_START = 1
-NODE_IP_START = 2
+MASTER_IP_START = 10
+NODE_IP_START = 20
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -56,16 +56,16 @@ Vagrant.configure("2") do |config|
 
   # Provision Master Nodes
   (1..NUM_MASTER_NODE).each do |i|
-      config.vm.define "k8s-control" do |node|
+      config.vm.define "control0#{i}" do |node|
         # Name shown in the GUI
         node.vm.provider "virtualbox" do |vb|
-            vb.name = "k8s-control0#{i}"
+            vb.name = "control0#{i}"
             vb.memory = 2048
             vb.cpus = 2
             vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
 
         end
-        node.vm.hostname = "k8s-control0#{i}"
+        node.vm.hostname = "control0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
         node.vm.network "forwarded_port", guest: 22, host: "#{2710 + i}"
 
@@ -77,7 +77,12 @@ Vagrant.configure("2") do |config|
         node.vm.provision "config-containerd", type: "shell", :path => "scripts/03-containerd-config.sh"
         node.vm.provision "install-containerd", type: "shell", :path => "scripts/04-containerd-install.sh"
         node.vm.provision "disable-swapoff", type: "shell", :inline => "sudo swapoff -a"
-        node.vm.provision "install-k8s", type: "shell", :path => "scripts/05-install-k8s.sh"
+        node.vm.provision "install-k8s-tools", type: "shell", :path => "scripts/05-install-k8s.sh"
+
+        if node.vm.hostname == "control01"
+          node.vm.provision "install-kubeadm", type: "shell", :path => "scripts/06-kubeadm-init.sh"
+          node.vm.provision "install-cni", type: "shell", :path => "scripts/07-network-plugin.sh"
+        end
 
       end
   end
@@ -85,15 +90,15 @@ Vagrant.configure("2") do |config|
 
   # Provision Worker Nodes
   (1..NUM_WORKER_NODE).each do |i|
-    config.vm.define "k8s-worker0#{i}" do |node|
+    config.vm.define "worker0#{i}" do |node|
         node.vm.provider "virtualbox" do |vb|
-            vb.name = "k8s-worker0#{i}"
+            vb.name = "worker0#{i}"
             vb.memory = 2048
             vb.cpus = 2
             vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
 
         end
-        node.vm.hostname = "k8s-worker0#{i}"
+        node.vm.hostname = "worker0#{i}"
         node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
                 node.vm.network "forwarded_port", guest: 22, host: "#{2720 + i}"
 
@@ -105,7 +110,7 @@ Vagrant.configure("2") do |config|
         node.vm.provision "config-containerd", type: "shell", :path => "scripts/03-containerd-config.sh"
         node.vm.provision "install-containerd", type: "shell", :path => "scripts/04-containerd-install.sh"
         node.vm.provision "disable-swapoff", type: "shell", :inline => "sudo swapoff -a"
-        node.vm.provision "install-k8s", type: "shell", :path => "scripts/05-install-k8s.sh"
+        node.vm.provision "install-k8s-tools", type: "shell", :path => "scripts/05-install-k8s.sh"
 
     end
   end

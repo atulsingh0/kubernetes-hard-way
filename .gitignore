@@ -9,3 +9,4 @@
 ### Vagrant Patch ###
 *.box
 
+k8s-join-script.sh
