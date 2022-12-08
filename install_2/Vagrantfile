@@ -81,8 +81,11 @@ Vagrant.configure("2") do |config|
 
         if node.vm.hostname == "control01"
           node.vm.provision "install-kubeadm", type: "shell", :path => "scripts/06-kubeadm-init.sh"
-          node.vm.provision "install-cni", type: "shell", :path => "scripts/07-network-plugin.sh"
+          node.vm.provision "config-kubectl", type: "shell", :path => "scripts/07-config-kubectl.sh"
+          node.vm.provision "config-kubectl-vagrant", type: "shell", privileged: false, :path => "scripts/07-config-kubectl.sh"
+          node.vm.provision "install-cni", type: "shell", :path => "scripts/08-network-plugin.sh"
         end
+
 
       end
   end
@@ -111,7 +114,8 @@ Vagrant.configure("2") do |config|
         node.vm.provision "install-containerd", type: "shell", :path => "scripts/04-containerd-install.sh"
         node.vm.provision "disable-swapoff", type: "shell", :inline => "sudo swapoff -a"
         node.vm.provision "install-k8s-tools", type: "shell", :path => "scripts/05-install-k8s.sh"
-
+        node.vm.provision "k8s-join", type: "shell", :inline => "sudo sh /vagrant/k8s-join-script.sh"
+        #node.vm.provision "config-kubctl-worker", type: "shell", :inline => "sudo sh /vagrant/k8s-join-script.sh"
     end
   end
 end
