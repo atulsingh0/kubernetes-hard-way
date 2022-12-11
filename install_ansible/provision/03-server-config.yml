@@ -1,0 +1,33 @@
+---
+# Play1 - Enabling Server for K8s
+- name: Enableing Server for k8s
+  hosts: all
+  become: yes
+  become_user: root
+  gather_facts: false
+  tasks:
+    - name: Enable Module for Containrd
+      copy:
+        dest: "/etc/modules-load.d/containerd.conf"
+        content: |
+          overlay
+          br_netfilter
+
+    - name: Enabling Kernel Module
+      ansible.builtin.shell:
+        cmd: |
+          modprobe overlay
+          modprobe br_netfilter
+
+    - name: Enabling IPv4
+      copy:
+        dest: "/etc/sysctl.d/99-kubernetes-cri.conf"
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.ipv4.ip_forward = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+
+    - name: Reloading System Setting
+      ansible.builtin.shell:
+        cmd: |
+          sysctl --system

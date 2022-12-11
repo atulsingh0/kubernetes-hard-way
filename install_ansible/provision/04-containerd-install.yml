@@ -1,0 +1,23 @@
+---
+# Play1 - Installing Containered
+- name: Containerd Installation & Configuration
+  hosts: all
+  become: yes
+  become_user: root
+  gather_facts: false
+  tasks:
+    - name: Containerd Installation
+      apt:
+        name: containerd
+        state: latest
+
+    - name: Containerd Config
+      ansible.builtin.shell:
+        cmd: |
+          mkdir -p /etc/containerd
+          containerd config default | sudo tee /etc/containerd/config.toml
+
+    - name: Restarting containerd
+      ansible.builtin.service:
+        name: containerd
+        state: restarted
