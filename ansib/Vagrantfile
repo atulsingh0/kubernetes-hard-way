@@ -3,8 +3,8 @@
 
 # Define the number of master and worker nodes
 # If this number is changed, remember to update setup-hosts.sh script with the new hosts IP details in /etc/hosts of each VM.
-NUM_MASTER_NODE = 2
-SSH_KEY_PATH="/Users/atul/.ssh/"
+NUM_MASTER_NODE = 1
+SSH_KEY_PATH="File.expand_path('~')/.ssh/"
 SSH_KEY="id_ed25519.pub"
 
 IP_NW = "192.168.56."
@@ -71,7 +71,7 @@ Vagrant.configure("2") do |config|
         #config.vm.provision "shell", inline: "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
         #config.vm.provision "file", source: "#{SSH_KEY_PATH}#{SSH_KEY}", destination: "~/.ssh/#{SSH_KEY}"
         config.vm.provision "copy ssh public key", type: "shell" do |s|
-          ssh_pub_key = File.readlines("#{SSH_KEY_PATH}#{SSH_KEY}").first.strip
+          ssh_pub_key = File.readlines("#{File.expand_path('~')}/.ssh/#{SSH_KEY}").first.strip
           s.inline = <<-EOL
           if grep -sq "#{ssh_pub_key}" /home/vagrant/.ssh/authorized_keys; then
             echo "SSH keys already provisioned."
