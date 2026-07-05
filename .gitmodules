@@ -1,3 +1,6 @@
 [submodule "kelseyhightower/k8s-the-hard-way"]
 	path = kelseyhightower/k8s-the-hard-way
 	url = https://github.com/kelseyhightower/kubernetes-the-hard-way.git
+[submodule "k8s-net-labs"]
+	path = k8s-net-labs
+	url = https://github.com/korvus81/k8s-net-labs.git
